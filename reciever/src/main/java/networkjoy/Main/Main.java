@@ -22,7 +22,7 @@ public class Main {
             System.out.print("VALUE");
             axisVal = scanner.nextLine();
             if (!inputVal.equals("STOP"))
-                vjoy.setButton(Boolean.valueOf(axisVal), Byte.valueOf(inputVal));
+                vjoy.setAxis(Integer.valueOf(axisVal), Integer.valueOf(inputVal));
         }
         scanner.close();
         vjoy.releaseOwn();

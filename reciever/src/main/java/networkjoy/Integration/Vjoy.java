@@ -20,7 +20,7 @@ public class Vjoy {
     public boolean takeOwn(){
         return vJoyInterface.AcquireVJD(this.id);
     }
-    public boolean setAxisValue(int val, int axId){
+    public boolean setAxis(int val, int axId){
         return vJoyInterface.SetAxis(val, this.id, axId);
     }
     public void releaseOwn() {
