@@ -1,5 +1,4 @@
 package networkjoy.Libraries;
-import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.win32.StdCallLibrary;
