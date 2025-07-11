@@ -12,9 +12,11 @@ import static org.lwjgl.glfw.GLFW.GLFW_HAT_UP;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Map;
 
 import networkjoy.integration.Joystick;
-import networkjoy.integration.Joystick.ReturnedJoyData;
+import networkjoy.util.ConvertedJoystickInputs;
+import networkjoy.util.ReturnedJoyData;
 
 public class JoystickHandler {
     private int[] assignedButtons;
@@ -27,6 +29,11 @@ public class JoystickHandler {
         this.assignedAxis = assignedAxis;
         this.assignedPovs = assignedPovs;
         this.joystick = new Joystick(joyId);
+
+    }
+
+    public static Map<String, Integer> getAllJoysticks() {
+        return Joystick.getAllJoy();
 
     }
 
@@ -43,7 +50,7 @@ public class JoystickHandler {
     }
 
     public boolean bindButtons(int buttonId) {
-        ByteBuffer buttons = joystick.readAllParts().buttons;
+        ByteBuffer buttons = joystick.readAllParts().getButtons();
         for (int i = 0; i < buttons.limit(); i++) {
             if (buttons.get(i) == 1) {
                 this.assignedButtons[buttonId - 1] = i;
@@ -54,7 +61,7 @@ public class JoystickHandler {
     }
 
     public boolean bindAxis(int axisId) {
-        FloatBuffer axes = joystick.readAllParts().axes;
+        FloatBuffer axes = joystick.readAllParts().getAxes();
         for (int i = 0; i < axes.limit(); i++) {
             Float currentAxis = axes.get(i);
             if (Math.abs(currentAxis) > 0.5) {
@@ -66,7 +73,7 @@ public class JoystickHandler {
     }
 
     public boolean bindPovs(int povId) {
-        ByteBuffer povs = joystick.readAllParts().povs;
+        ByteBuffer povs = joystick.readAllParts().getPovs();
         for (int i = 0; i < povs.limit(); i++) {
             if (povs.get(i) == 1) {
                 this.assignedPovs[povId - 1] = i;
@@ -76,29 +83,16 @@ public class JoystickHandler {
         return false;
     }
 
-    public class ConvertedJoystickInputs {
-        public int[] axisData;
-        public boolean[] buttonData;
-        public byte[] povData;
-
-        public ConvertedJoystickInputs(int[] axisData, boolean[] buttonData, byte[] povData) {
-            this.axisData = axisData;
-            this.buttonData = buttonData;
-            this.povData = povData;
-        }
-
-    }
-
     public ConvertedJoystickInputs convertJoysitckInputs() {
         ReturnedJoyData joyData = joystick.readAllParts();
         int[] axisData = new int[assignedAxis.length];
         boolean[] buttonData = new boolean[assignedButtons.length];
         byte[] povData = new byte[assignedPovs.length];
 
-        for (int i = 0; i < joyData.buttons.limit(); i++) {
+        for (int i = 0; i < joyData.getButtons().limit(); i++) {
             for (int j = 0; j < assignedButtons.length; j++) {
                 if (assignedButtons[j] == i) {
-                    if (joyData.buttons.get(i) == 1) {
+                    if (joyData.getButtons().get(i) == 1) {
                         buttonData[j] = true;
                     } else {
                         buttonData[j] = false;
@@ -108,19 +102,19 @@ public class JoystickHandler {
             }
         }
 
-        for (int i = 0; i < joyData.axes.limit(); i++) {
+        for (int i = 0; i < joyData.getAxes().limit(); i++) {
             for (int j = 0; j < assignedAxis.length; j++) {
                 if (assignedAxis[j] == i) {
-                    axisData[j] = (int) ((joyData.axes.get(i) + 1) * 0x8000) / 2 + 1;
+                    axisData[j] = (int) ((joyData.getAxes().get(i) + 1) * 0x8000) / 2 + 1;
                 }
 
             }
 
         }
-        for (int i = 0; i < joyData.povs.limit(); i++) {
+        for (int i = 0; i < joyData.getPovs().limit(); i++) {
             for (int j = 0; j < assignedPovs.length; j++) {
                 if (assignedPovs[j] == i) {
-                    Byte povPos = joyData.povs.get(i);
+                    Byte povPos = joyData.getPovs().get(i);
                     switch (povPos) {
                         case GLFW_HAT_CENTERED:
                             povData[j] = 0;

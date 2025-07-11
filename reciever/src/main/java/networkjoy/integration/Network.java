@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import networkjoy.util.RecievedJoyData;
+
+
 public class Network {
     private Socket socket;
     private DataInputStream input;
@@ -14,7 +17,7 @@ public class Network {
 
     public Network(boolean server, String hostname, int port) throws IOException {
         if (server) {
-            ServerSocket serverSocket = new ServerSocket();
+            ServerSocket serverSocket = new ServerSocket(port);
             this.socket = serverSocket.accept();
             serverSocket.close();
 
@@ -26,19 +29,7 @@ public class Network {
 
     }
 
-    public class RecievedJoyData {
 
-        public boolean[] buttonDatas;
-        public int[] axisDatas;
-        public byte[] povDatas;
-
-        public RecievedJoyData(int buttonInputs, int axisInputs, int povInputs) {
-            this.buttonDatas = new boolean[buttonInputs];
-            this.axisDatas = new int[axisInputs];
-            this.povDatas = new byte[povInputs];
-        }
-
-    }
 
     public RecievedJoyData recieveData() throws IOException {
         output.writeInt(73239); // Write a specific int to signify ready to recieve.
@@ -48,14 +39,17 @@ public class Network {
         RecievedJoyData recievedData = new RecievedJoyData(buttonInputs, axisInputs, povInputs);
 
         for (int i = 0; i < buttonInputs; i++) {
-            recievedData.buttonDatas[i] = input.readBoolean();
+            recievedData.getButtonDatas()[i] = input.readBoolean();
         }
         for (int i = 0; i < axisInputs; i++) {
-            recievedData.axisDatas[i] = input.readInt();
+            recievedData.getAxisDatas()[i] = input.readInt();
         }
-        input.read(recievedData.povDatas);
+        input.read(recievedData.getPovDatas());
 
         return recievedData;
+    }
+        public void stopConnection() throws IOException {
+        this.socket.close();
     }
 
 }

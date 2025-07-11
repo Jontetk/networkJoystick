@@ -10,7 +10,7 @@ import networkjoy.libraries.VJoyInterface;
 
 public class Vjoy {
     private VJoyInterface vJoyInterface = Native.load("vJoyInterface", VJoyInterface.class);
-    int id;
+    private int id;
     public static final int HID_USAGE_X = 0x30;
     public static final int HID_USAGE_Y = 0x31;
     public static final int HID_USAGE_Z = 0x32;

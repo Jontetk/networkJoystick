@@ -43,7 +43,7 @@ public class Network {
 
     }
 
-    public void stopConnection() throws Exception {
+    public void stopConnection() throws IOException {
         this.socket.close();
     }
 }

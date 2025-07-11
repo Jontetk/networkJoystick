@@ -2,11 +2,11 @@ package networkjoy.integration;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import networkjoy.util.ReturnedJoyData;
 
 public class Joystick {
 
@@ -22,6 +22,7 @@ public class Joystick {
             GLFW_JOYSTICK_16);
 
     public static Map<String, Integer> getAllJoy() {
+        glfwPollEvents();
         Map<String, Integer> availableJoysticks = new HashMap<String, Integer>();
         for (int joyId : JOYSTICKS) {
             boolean prenet = glfwJoystickPresent(joyId);
@@ -36,18 +37,7 @@ public class Joystick {
         this.selectedJoy = selectedJoy;
     }
 
-    public class ReturnedJoyData {
-        public FloatBuffer axes;
-        public ByteBuffer buttons;
-        public ByteBuffer povs;
 
-        public ReturnedJoyData(FloatBuffer axes, ByteBuffer buttons, ByteBuffer povs) {
-            this.axes = axes;
-            this.buttons = buttons;
-            this.povs = povs;
-        }
-
-    }
 
     public ReturnedJoyData readAllParts() {
         return (new ReturnedJoyData(
