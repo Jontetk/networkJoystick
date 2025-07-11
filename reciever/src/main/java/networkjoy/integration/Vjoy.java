@@ -1,4 +1,4 @@
-package networkjoy.Integration;
+package networkjoy.integration;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.sun.jna.Native;
 
-import networkjoy.Libraries.VJoyInterface;
+import networkjoy.libraries.VJoyInterface;
 
 public class Vjoy {
     private VJoyInterface vJoyInterface = Native.load("vJoyInterface", VJoyInterface.class);
@@ -21,8 +21,7 @@ public class Vjoy {
     public static final int HID_USAGE_SL1 = 0x37;
     public static final int HID_USAGE_WHL = 0x38;
     public static final int HID_USAGE_POV = 0x39;
-    public static final List<Integer> HID_USAGES = Collections.unmodifiableList(Arrays.asList
-    (HID_USAGE_X,
+    public static final List<Integer> HID_USAGES = Collections.unmodifiableList(Arrays.asList(HID_USAGE_X,
             HID_USAGE_Y,
             HID_USAGE_Z,
             HID_USAGE_RX,

@@ -1,4 +1,4 @@
-package networkjoy.Model;
+package networkjoy.model;
 
 import static org.lwjgl.glfw.GLFW.GLFW_HAT_CENTERED;
 import static org.lwjgl.glfw.GLFW.GLFW_HAT_DOWN;
@@ -13,8 +13,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_HAT_UP;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-import networkjoy.Integration.Joystick;
-import networkjoy.Integration.Joystick.ReturnedJoyData;
+import networkjoy.integration.Joystick;
+import networkjoy.integration.Joystick.ReturnedJoyData;
 
 public class JoystickHandler {
     private int[] assignedButtons;

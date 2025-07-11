@@ -1,8 +1,9 @@
-package networkjoy.View;
+package networkjoy.view;
 
 import java.io.IOException;
 import java.util.Scanner;
-import networkjoy.Controller.Controller;
+import networkjoy.controller.Controller;
+
 public class View {
     private final Controller controller;
     private final Scanner scanner;
@@ -20,12 +21,10 @@ public class View {
             String input = scanner.nextLine().trim();
             String[] parts = input.split("\\s+");
 
-            if (parts.length == 0) continue;
+            if (parts.length == 0)
+                continue;
 
             String command = parts[0].toLowerCase();
-
-
-
 
             switch (command.toLowerCase()) {
 
@@ -39,22 +38,21 @@ public class View {
                 case "bind":
                     if (parts.length < 3) {
                         System.out.println("Usage: bind type id");
-                    }else{
-                        
-                    
-                    switch (parts[1].toLowerCase()) {
-                        case "button":
-                            controller.bindButtons(Integer.parseInt(parts[2]));
-                            break;
-                        case "axis":
-                            controller.bindAxis(Integer.parseInt(parts[2]));
-                            break;
-                        case "pov":
-                            controller.bindPovs(Integer.parseInt(parts[2]));
-                            break;
-                        default:
-                            break;
-                    }
+                    } else {
+
+                        switch (parts[1].toLowerCase()) {
+                            case "button":
+                                controller.bindButtons(Integer.parseInt(parts[2]));
+                                break;
+                            case "axis":
+                                controller.bindAxis(Integer.parseInt(parts[2]));
+                                break;
+                            case "pov":
+                                controller.bindPovs(Integer.parseInt(parts[2]));
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     break;
 
@@ -65,23 +63,21 @@ public class View {
         }
     }
 
-    public void takeInput(){
+    public void takeInput() {
         String input = "";
-        try{
-        if (System.in.available()>0) {
-            input = scanner.nextLine().trim();
-        }
-        
-        if (input.equalsIgnoreCase("stop")){
-            controller.stop();
+        try {
+            if (System.in.available() > 0) {
+                input = scanner.nextLine().trim();
             }
-        }catch(IOException e) {
+
+            if (input.equalsIgnoreCase("stop")) {
+                controller.stop();
+            }
+        } catch (IOException e) {
             System.out.println(e);
             System.exit(1);
         }
     }
-        
-    
 
     private void printHelp() {
         System.out.println("Available commands:");

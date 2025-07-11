@@ -1,4 +1,4 @@
-package networkjoy.Integration;
+package networkjoy.integration;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 
 public class Network {
     private Socket socket;
@@ -26,23 +25,25 @@ public class Network {
         this.output = new DataOutputStream(this.socket.getOutputStream());
 
     }
-    public void sendJoyData(boolean[] buttonDatas, int[] axisDatas, byte[] povDatas) throws IOException{
-        while (input.readInt() != 73239) {} // Block until reciever is ready
+
+    public void sendJoyData(boolean[] buttonDatas, int[] axisDatas, byte[] povDatas) throws IOException {
+        while (input.readInt() != 73239) {
+        } // Block until reciever is ready
         output.writeByte(buttonDatas.length);
         output.writeByte(axisDatas.length);
         output.writeByte(povDatas.length);
 
-        for(boolean button:buttonDatas) {
+        for (boolean button : buttonDatas) {
             output.writeBoolean(button);
         }
-        for(int axis:axisDatas) {
+        for (int axis : axisDatas) {
             output.writeInt(axis);
         }
         output.write(povDatas);
 
-
     }
-    public void stopConnection() throws Exception{
+
+    public void stopConnection() throws Exception {
         this.socket.close();
     }
 }

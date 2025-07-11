@@ -1,4 +1,4 @@
-package networkjoy.Integration;
+package networkjoy.integration;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -45,7 +45,7 @@ public class Network {
         int buttonInputs = input.readUnsignedByte();
         int axisInputs = input.readUnsignedByte();
         int povInputs = input.readUnsignedByte();
-        RecievedJoyData recievedData = new RecievedJoyData(buttonInputs,axisInputs,povInputs);
+        RecievedJoyData recievedData = new RecievedJoyData(buttonInputs, axisInputs, povInputs);
 
         for (int i = 0; i < buttonInputs; i++) {
             recievedData.buttonDatas[i] = input.readBoolean();
