@@ -1,8 +1,6 @@
 package networkjoy.Integration;
 
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import static org.lwjgl.glfw.Callbacks.*;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.nio.ByteBuffer;
