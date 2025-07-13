@@ -30,12 +30,11 @@ public class View {
             try {
                 switch (command.toLowerCase()) {
                     case "vjoy":
-                    if (parts.length < 2) {
-                        System.out.println("Usage: vjoy <vjoy id>");
-                    }
-                    else{
-                        controller.selectVjoy(Integer.parseInt(parts[1]));
-                    }
+                        if (parts.length < 2) {
+                            System.out.println("Usage: vjoy <vjoy id>");
+                        } else {
+                            controller.selectVjoy(Integer.parseInt(parts[1]));
+                        }
                         break;
 
                     case "help":
@@ -43,7 +42,8 @@ public class View {
                         break;
                     case "start":
 
-                        System.out.println("Started recieving data\nType stop and press enter to stop and return to menu");
+                        System.out.println(
+                                "Started recieving data\nType stop and press enter to stop and return to menu");
                         controller.recieveData();
 
                         break;
@@ -76,6 +76,8 @@ public class View {
                 }
             } catch (OperationFailedException e) {
                 System.out.println(e.getMessage());
+            } catch (java.lang.NumberFormatException e) {
+                System.out.println("Incorrect format");
             }
         }
 
@@ -101,8 +103,10 @@ public class View {
         System.out.println("Available commands:");
         System.out.println("  vjoy <vjoy id>            - Selects Vjoy");
         System.out.println("  start                     - starts recieving");
-        System.out.println("  server <port>             - sets this reciever as a server with port and waits for client to connect");
-        System.out.println("  client <hostname> <port>  - sets this reciever as a client and connects to hostname and port");
+        System.out.println(
+                "  server <port>             - sets this reciever as a server with port and waits for client to connect");
+        System.out.println(
+                "  client <hostname> <port>  - sets this reciever as a client and connects to hostname and port");
         System.out.println("  exit                      - Exit the program");
     }
 }
