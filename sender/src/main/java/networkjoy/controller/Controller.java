@@ -75,8 +75,7 @@ public class Controller {
             running = false;
             throw new OperationFailedException("Couldn't send data: " + e);
 
-        }
-        catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             running = false;
             throw new OperationFailedException("Set amount of inputs and bind them all first");
         }
@@ -103,7 +102,9 @@ public class Controller {
             FileInputStream fileInStream = new FileInputStream("Bindings.txt");
             ObjectInputStream objectInStream = new ObjectInputStream(fileInStream);
             this.assignedBindings = (AssignedBindings) objectInStream.readObject();
-            joystickHandler.setAssignedBindings(this.assignedBindings);
+            if (joystickHandler != null) {
+                joystickHandler.setAssignedBindings(this.assignedBindings);
+            }
             objectInStream.close();
             fileInStream.close();
 
