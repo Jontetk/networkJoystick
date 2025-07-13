@@ -74,12 +74,18 @@ public class View {
 
                         }
                         break;
-
+                    case "save":
+                        controller.saveBindings();
+                        break;
+                    case "load":
+                        controller.loadBindings();
+                        break;
                     case "help":
                         printHelp();
                         break;
                     case "start":
-                                                System.out.println("Started sending data\nType stop and press enter to stop and return to menu");
+                        System.out
+                                .println("Started sending data\nType stop and press enter to stop and return to menu");
 
                         controller.sendData();
                         break;
@@ -184,5 +190,7 @@ public class View {
                 "  client <hostname> <port>      - sets this sender as a client and connects to hostname and port");
         System.out.println("  bind <type> [ids]             - Binds the selected type to vjoy ids");
         System.out.println("  exit                          - Exit the program");
+        System.out.println("  save                          - Saves the current bindings");
+        System.out.println("  load                          - Loads the bindings from Bindings.txt");              
     }
 }

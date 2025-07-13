@@ -1,18 +1,21 @@
 package networkjoy.controller;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 import networkjoy.integration.Network;
 import networkjoy.model.JoystickHandler;
+import networkjoy.util.AssignedBindings;
 import networkjoy.util.ConvertedJoystickInputs;
 import networkjoy.view.View;
 
 public class Controller {
 
-    private int[] assignedButtons;
-    private int[] assignedAxis;
-    private int[] assignedPovs;
+    private AssignedBindings assignedBindings;
     private JoystickHandler joystickHandler;
     private boolean running;
     private View view;
@@ -20,11 +23,12 @@ public class Controller {
 
     public Controller() {
         this.running = false;
+        this.assignedBindings = new AssignedBindings();
 
     }
 
     public void selectJoystick(int joyId) {
-        this.joystickHandler = new JoystickHandler(joyId, assignedButtons, assignedAxis, assignedPovs);
+        this.joystickHandler = new JoystickHandler(joyId, assignedBindings);
     }
 
     public Map<String, Integer> getAllJoysticks() {
@@ -70,35 +74,57 @@ public class Controller {
         } catch (IOException e) {
             running = false;
             throw new OperationFailedException("Couldn't send data: " + e);
-            
 
+        }
+        catch(NullPointerException e) {
+            running = false;
+            throw new OperationFailedException("Set amount of inputs and bind them all first");
         }
         running = false;
 
     }
 
-    public void setButtonAmount(int buttonAmount) {
-        if (joystickHandler == null) {
-            throw new OperationFailedException("Select a joystick first");
+    public void saveBindings() {
+        try {
+
+            FileOutputStream fileOutStream = new FileOutputStream("Bindings.txt");
+            ObjectOutputStream objectOutStream = new ObjectOutputStream(fileOutStream);
+            objectOutStream.writeObject(this.assignedBindings);
+            objectOutStream.close();
+            fileOutStream.close();
+        } catch (IOException e) {
+            throw new OperationFailedException("Couldn't save bindings: " + e);
         }
-        this.assignedButtons = new int[buttonAmount];
-        joystickHandler.setAssignedButtons(this.assignedButtons);
+
+    }
+
+    public void loadBindings() {
+        try {
+            FileInputStream fileInStream = new FileInputStream("Bindings.txt");
+            ObjectInputStream objectInStream = new ObjectInputStream(fileInStream);
+            this.assignedBindings = (AssignedBindings) objectInStream.readObject();
+            joystickHandler.setAssignedBindings(this.assignedBindings);
+            objectInStream.close();
+            fileInStream.close();
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new OperationFailedException("Couldn't load bindings: " + e);
+        }
+    }
+
+    public void setButtonAmount(int buttonAmount) {
+
+        assignedBindings.setButtons(new int[buttonAmount]);
     }
 
     public void setAxisAmount(int axisAmount) {
-        if (joystickHandler == null) {
-            throw new OperationFailedException("Select a joystick first");
-        }
-        this.assignedAxis = new int[axisAmount];
-        joystickHandler.setAssignedAxis(this.assignedAxis);
+
+        assignedBindings.setAxis(new int[axisAmount]);
     }
 
     public void setPovAmount(int povAmount) {
-        if (joystickHandler == null) {
-            throw new OperationFailedException("Select a joystick first");
-        }
-        this.assignedPovs = new int[povAmount];
-        joystickHandler.setAssignedPovs(this.assignedPovs);
+
+        assignedBindings.setPovs(new int[povAmount]);
     }
 
     public void bindButtons(int bId) {
@@ -118,6 +144,8 @@ public class Controller {
 
     public void bindAxis(int axId) {
         running = true;
+        joystickHandler.setAxisCheck(true);
+
         try {
             while (!joystickHandler.bindAxis(axId) && running) {
                 view.takeInput();
@@ -125,7 +153,7 @@ public class Controller {
         } catch (java.lang.NullPointerException e) {
             running = false;
             throw new OperationFailedException("No axis on joystick or joystick not connected");
-        }catch (java.lang.ArrayIndexOutOfBoundsException e) {
+        } catch (java.lang.ArrayIndexOutOfBoundsException e) {
             running = false;
             throw new OperationFailedException("To few axis set, set a higher amount of axis");
         }
@@ -141,7 +169,7 @@ public class Controller {
         } catch (java.lang.NullPointerException e) {
             running = false;
             throw new OperationFailedException("No povs on joystick or joystick not connected");
-        }catch (java.lang.ArrayIndexOutOfBoundsException e) {
+        } catch (java.lang.ArrayIndexOutOfBoundsException e) {
             running = false;
             throw new OperationFailedException("To few povs set, set a higher amount of povs");
         }
