@@ -109,7 +109,7 @@ public class JoystickHandler {
         for (int i = 0; i < joyData.getAxes().limit(); i++) {
             for (int j = 0; j < assignedBindings.getAxis().length; j++) {
                 if (assignedBindings.getAxis()[j] == i) {
-                    axisData[j] = (int) ((joyData.getAxes().get(i) + 1) * 0x8000) / 2 + 1;
+                    axisData[j] = (int) (((joyData.getAxes().get(i) + 1) / 2) * (0x8000 - 1)) + 1;
                 }
 
             }
