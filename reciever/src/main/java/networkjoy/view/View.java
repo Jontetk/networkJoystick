@@ -47,7 +47,9 @@ public class View {
                         controller.recieveData();
 
                         break;
-
+                    case "stopconnection":
+                        controller.stopConnection();
+                        break;
                     case "server":
                         if (parts.length < 2) {
                             System.out.println("Usage: server <port>");
@@ -108,5 +110,8 @@ public class View {
         System.out.println(
                 "  client <hostname> <port>  - sets this reciever as a client and connects to hostname and port");
         System.out.println("  exit                      - Exit the program");
+        System.out.println(
+                "  stopconnection                - Stops the current network connection. The connection needs to be setup again");
+
     }
 }

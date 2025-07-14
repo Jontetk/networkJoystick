@@ -1,5 +1,6 @@
 package networkjoy.integration;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,8 +13,8 @@ import networkjoy.util.RecievedJoyData;
 
 public class Network {
     private Socket socket;
-    private DataInputStream input;
-    private DataOutputStream output;
+    private DataInputStream socketInput;
+    private DataOutputStream socketOutput;
 
     public Network(boolean server, String hostname, int port) throws IOException {
         if (server) {
@@ -24,27 +25,29 @@ public class Network {
         } else {
             this.socket = new Socket(InetAddress.getByName(hostname), port);
         }
-        this.input = new DataInputStream(this.socket.getInputStream());
-        this.output = new DataOutputStream(this.socket.getOutputStream());
+        this.socketInput = new DataInputStream(this.socket.getInputStream());
+        this.socketOutput = new DataOutputStream(this.socket.getOutputStream());
 
     }
 
 
 
     public RecievedJoyData recieveData() throws IOException {
-        output.writeInt(73239); // Write a specific int to signify ready to recieve.
-        int buttonInputs = input.readUnsignedByte();
-        int axisInputs = input.readUnsignedByte();
-        int povInputs = input.readUnsignedByte();
+        socketOutput.writeByte(239); // Write a specific byte to signify ready to recieve.
+        //int dataLength = socketInput.readInt();
+        
+        int buttonInputs = socketInput.readUnsignedByte();
+        int axisInputs = socketInput.readUnsignedByte();
+        int povInputs = socketInput.readUnsignedByte();
         RecievedJoyData recievedData = new RecievedJoyData(buttonInputs, axisInputs, povInputs);
 
         for (int i = 0; i < buttonInputs; i++) {
-            recievedData.getButtonDatas()[i] = input.readBoolean();
+            recievedData.getButtonDatas()[i] = socketInput.readBoolean();
         }
         for (int i = 0; i < axisInputs; i++) {
-            recievedData.getAxisDatas()[i] = input.readInt();
+            recievedData.getAxisDatas()[i] = socketInput.readInt();
         }
-        input.read(recievedData.getPovDatas());
+        socketInput.read(recievedData.getPovDatas());
 
         return recievedData;
     }

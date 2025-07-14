@@ -83,6 +83,10 @@ public class View {
                     case "help":
                         printHelp();
                         break;
+                    case "stopconnection":
+                        controller.stopConnection();
+                        break;
+
                     case "start":
                         System.out
                                 .println("Started sending data\nType stop and press enter to stop and return to menu");
@@ -191,6 +195,8 @@ public class View {
         System.out.println("  bind <type> [ids]             - Binds the selected type to vjoy ids");
         System.out.println("  exit                          - Exit the program");
         System.out.println("  save                          - Saves the current bindings");
-        System.out.println("  load                          - Loads the bindings from Bindings.txt");              
+        System.out.println("  load                          - Loads the bindings from Bindings.txt");
+        System.out.println(
+                "  stopconnection                - Stops the current network connection. The connection needs to be setup again");
     }
 }

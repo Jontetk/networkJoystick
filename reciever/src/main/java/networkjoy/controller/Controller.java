@@ -48,6 +48,14 @@ public class Controller {
         }
 
     }
+        public void stopConnection() {
+        try {
+            network.stopConnection();
+        } catch (IOException e) {
+            throw new OperationFailedException("Couldn't stop connection: "+e);
+        }
+        
+    }
     public void stop() {
         running = false;
     }
