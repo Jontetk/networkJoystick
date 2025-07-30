@@ -6,6 +6,7 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -20,6 +21,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.builtins.Completers.TreeCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -36,7 +38,6 @@ public class View {
     public View(Controller controller) throws IOException {
         this.controller = controller;
 
-
         commands = new ArrayList<Command>(14);
         commands.add(new Command("listjoy", "Lists all available joysticks"));
         commands.add(new Command("setaxis", "Sets the number of axis"));
@@ -46,23 +47,40 @@ public class View {
         commands.add(new Command("start", "Starts sending"));
         commands.add(new Command("server", "Sets this sender as a server with port and waits for client to connect"));
         commands.add(new Command("client", "Sets this sender as a client and connects to hostname and port"));
-        commands.add(new Command("bind", "Binds the selected type to vjoy ids"));
+        commands.add(new Command("bind", "Binds the selected type to vjoy ids",
+                Arrays.asList(new Command("button", null), new Command("axis", null), new Command("pov", null))));
         commands.add(new Command("exit", "Exit the program"));
         commands.add(new Command("save", "Saves the current bindings"));
         commands.add(new Command("load", "Loads the bindings from Bindings.txt"));
         commands.add(new Command("stopconnection",
                 "Stops the current network connection. The connection needs to be setup again"));
-        String[] commandArray = new String[commands.size()];
-        for (int i =0 ;i<commands.size();i++) {
-            commandArray[i] = commands.get(i).getCommand();
-        }
-        Completer commandCompleter = new StringsCompleter(Arrays.asList(commandArray));
+
+        // Completer commandCompleter = new
+        // StringsCompleter(Arrays.asList(commandArray));
+        Completer commandCompleter = new TreeCompleter(createNodesFromCommands(commands));
         this.terminal = TerminalBuilder.builder().system(true).build();
         this.lineReader = LineReaderBuilder.builder().terminal(this.terminal).completer(commandCompleter).build();
         this.printWriter = this.terminal.writer();
         lineReader.getWidgets().put("stop", this::stop);
         lineReader.getKeyMaps().get(LineReader.MAIN).bind(new Reference("stop"), KeyMap.ctrl('b'));
 
+    }
+
+    private List<TreeCompleter.Node> createNodesFromCommands(List<Command> commandsList) {
+        List<TreeCompleter.Node> nodeList = new ArrayList<TreeCompleter.Node>();
+        for (Command command : commandsList) {
+            if (command.getSubCommands() == null) {
+                nodeList.add(TreeCompleter.node(command.getCommand()));
+            } else {
+                ArrayList<Object> args = new ArrayList<Object>();
+                args.add(command.getCommand());
+                args.addAll(createNodesFromCommands(command.getSubCommands()));
+
+                nodeList.add(TreeCompleter.node(args.toArray()));
+            }
+
+        }
+        return nodeList;
     }
 
     public void start() {
@@ -182,7 +200,8 @@ public class View {
                                 case "button":
                                     for (int i = 2; i < parts.length; i++) {
                                         printWriter.print(
-                                                "Binding button " + parts[i] + " press Ctrl+b to continue to next button");
+                                                "Binding button " + parts[i]
+                                                        + " press Ctrl+b to continue to next button");
                                         printWriter.flush();
                                         controller.bindButtons(Integer.parseInt(parts[i]));
                                         try {
