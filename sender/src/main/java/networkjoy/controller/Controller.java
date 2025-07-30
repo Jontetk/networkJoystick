@@ -17,9 +17,10 @@ public class Controller {
 
     private AssignedBindings assignedBindings;
     private JoystickHandler joystickHandler;
-    private boolean running;
+    private volatile boolean running;
     private View view;
     private Network network;
+    private Thread thread;
 
     public Controller() {
         this.running = false;
@@ -58,28 +59,30 @@ public class Controller {
 
     public void sendData() {
         if (joystickHandler == null) {
-            throw new OperationFailedException("No joystick selected please select a joystick");
+            throw new OperationFailedException("\nNo joystick selected please select a joystick");
         }
         if (network == null) {
-            throw new OperationFailedException("No network setup, please set up as client or server");
+            throw new OperationFailedException("\nNo network setup, please set up as client or server");
         }
         try {
             running = true;
+            thread = new Thread(view::takeInput);
+            thread.start();
             while (running) {
-                view.takeInput();
+
                 ConvertedJoystickInputs conv = joystickHandler.convertJoysitckInputs();
-                network.sendJoyData(conv.getButtonData(), conv.getAxisData(), conv.getPovData());
+                network.sendJoyData(conv.getButtonData(), conv.getAxisData(), conv.getPovData(),this);
             }
 
         } catch (IOException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("Couldn't send data: " + e);
 
         } catch (NullPointerException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("Set amount of inputs and bind them all first");
         }
-        running = false;
+        view.stop(thread);
 
     }
 
@@ -131,16 +134,20 @@ public class Controller {
     public void bindButtons(int bId) {
         running = true;
         try {
+            thread = new Thread(view::takeInput);
+            thread.start();
+
             while (!joystickHandler.bindButtons(bId) && running) {
-                view.takeInput();
+
             }
         } catch (java.lang.NullPointerException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("No buttons on joystick or joystick not connected");
         } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("To few buttons set, set a higher amount of buttons");
         }
+        view.stop(thread);
     }
 
     public void bindAxis(int axId) {
@@ -148,44 +155,52 @@ public class Controller {
         joystickHandler.setAxisCheck(true);
 
         try {
+            thread = new Thread(view::takeInput);
+            thread.start();
+
             while (!joystickHandler.bindAxis(axId) && running) {
-                view.takeInput();
             }
         } catch (java.lang.NullPointerException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("No axis on joystick or joystick not connected");
         } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("To few axis set, set a higher amount of axis");
         }
-        running = false;
+        view.stop(thread);
     }
 
     public void bindPovs(int povId) {
         running = true;
         try {
+            thread = new Thread(view::takeInput);
+            thread.start();
+
             while (!joystickHandler.bindPovs(povId) && running) {
-                view.takeInput();
+
             }
         } catch (java.lang.NullPointerException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("No povs on joystick or joystick not connected");
         } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            running = false;
+            view.stop(thread);
             throw new OperationFailedException("To few povs set, set a higher amount of povs");
         }
-        running = false;
+        view.stop(thread);
     }
+
     public void stopConnection() {
         try {
             network.stopConnection();
         } catch (IOException e) {
-            throw new OperationFailedException("Couldn't stop connection: "+e);
+            throw new OperationFailedException("Couldn't stop connection: " + e);
         }
-        
+
     }
+
     public void stop() {
         running = false;
+        return;
     }
 
 }

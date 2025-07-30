@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import networkjoy.controller.Controller;
+
 public class Network {
     private Socket socket;
     private DataInputStream socketInput;
@@ -33,12 +35,12 @@ public class Network {
 
     }
 
-    public void sendJoyData(boolean[] buttonDatas, int[] axisDatas, byte[] povDatas) throws IOException {
+    public void sendJoyData(boolean[] buttonDatas, int[] axisDatas, byte[] povDatas,Controller controller) throws IOException {
         while (socketInput.readUnsignedByte() != 239) {
         } // Block until reciever is ready
         bArrayOutputStream.reset();
         DataOutputStream output = new DataOutputStream(bArrayOutputStream);
-        //output.writeInt(3+buttonDatas.length+4*axisDatas.length+povDatas.length);
+        output.writeBoolean(true);;
         output.writeByte(buttonDatas.length);
         output.writeByte(axisDatas.length);
         output.writeByte(povDatas.length);
@@ -57,4 +59,5 @@ public class Network {
     public void stopConnection() throws IOException {
         this.socket.close();
     }
+
 }

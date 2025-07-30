@@ -1,26 +1,77 @@
 package networkjoy.view;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Scanner;
+import java.util.function.Supplier;
+
+import javax.swing.text.Keymap;
+
+import org.jline.keymap.BindingReader;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.Binding;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Reference;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 import networkjoy.controller.Controller;
 import networkjoy.controller.OperationFailedException;
 
 public class View {
     private final Controller controller;
-    private final Scanner scanner;
+    private final Terminal terminal;
+    private final LineReader lineReader;
+    private final PrintWriter printWriter;
+    private final ArrayList<Command> commands;
 
-    public View(Controller controller) {
+    public View(Controller controller) throws IOException {
         this.controller = controller;
-        this.scanner = new Scanner(System.in);
+
+
+        commands = new ArrayList<Command>(14);
+        commands.add(new Command("listjoy", "Lists all available joysticks"));
+        commands.add(new Command("setaxis", "Sets the number of axis"));
+        commands.add(new Command("setbuttons", "Sets the number of buttons"));
+        commands.add(new Command("setpovs", "Sets the number of povs"));
+        commands.add(new Command("selectjoy", "Select a joystick to read from"));
+        commands.add(new Command("start", "Starts sending"));
+        commands.add(new Command("server", "Sets this sender as a server with port and waits for client to connect"));
+        commands.add(new Command("client", "Sets this sender as a client and connects to hostname and port"));
+        commands.add(new Command("bind", "Binds the selected type to vjoy ids"));
+        commands.add(new Command("exit", "Exit the program"));
+        commands.add(new Command("save", "Saves the current bindings"));
+        commands.add(new Command("load", "Loads the bindings from Bindings.txt"));
+        commands.add(new Command("stopconnection",
+                "Stops the current network connection. The connection needs to be setup again"));
+        String[] commandArray = new String[commands.size()];
+        for (int i =0 ;i<commands.size();i++) {
+            commandArray[i] = commands.get(i).getCommand();
+        }
+        Completer commandCompleter = new StringsCompleter(Arrays.asList(commandArray));
+        this.terminal = TerminalBuilder.builder().system(true).build();
+        this.lineReader = LineReaderBuilder.builder().terminal(this.terminal).completer(commandCompleter).build();
+        this.printWriter = this.terminal.writer();
+        lineReader.getWidgets().put("stop", this::stop);
+        lineReader.getKeyMaps().get(LineReader.MAIN).bind(new Reference("stop"), KeyMap.ctrl('b'));
+
     }
 
-    public void start() throws InterruptedException {
-        System.out.println("Welcome to Type 'help' for available commands.");
+    public void start() {
+        printWriter.println("Welcome to the sender Type 'help' for available commands.");
+        printWriter.flush();
 
         while (true) {
-            System.out.print("> ");
-            String input = scanner.nextLine().trim();
+
+            String input = lineReader.readLine(">").trim();
             String[] parts = input.split("\\s+");
 
             if (parts.length == 0)
@@ -33,13 +84,15 @@ public class View {
                         Map<String, Integer> connectedJoysticks = controller.getAllJoysticks();
 
                         for (String key : connectedJoysticks.keySet()) {
-                            System.out.println(key + " : " + connectedJoysticks.get(key));
+                            printWriter.println(key + " : " + connectedJoysticks.get(key));
+                            printWriter.flush();
                         }
 
                         break;
                     case "setaxis":
                         if (parts.length < 2) {
-                            System.out.println("Usage: setaxis <axis amount>");
+                            printWriter.println("Usage: setaxis <axis amount>");
+                            printWriter.flush();
                         } else {
 
                             controller.setAxisAmount(Integer.parseInt(parts[1]));
@@ -48,7 +101,8 @@ public class View {
                         break;
                     case "setbuttons":
                         if (parts.length < 2) {
-                            System.out.println("Usage: setbuttons <button amount>");
+                            printWriter.println("Usage: setbuttons <button amount>");
+                            printWriter.flush();
                         } else {
 
                             controller.setButtonAmount(Integer.parseInt(parts[1]));
@@ -57,7 +111,8 @@ public class View {
                         break;
                     case "setpovs":
                         if (parts.length < 2) {
-                            System.out.println("Usage: setpovs <pov amount>");
+                            printWriter.println("Usage: setpovs <pov amount>");
+                            printWriter.flush();
                         } else {
 
                             controller.setPovAmount(Integer.parseInt(parts[1]));
@@ -67,7 +122,8 @@ public class View {
 
                     case "selectjoy":
                         if (parts.length < 2) {
-                            System.out.println("Usage: selectjoy <joy id>");
+                            printWriter.println("Usage: selectjoy <joy id>");
+                            printWriter.flush();
                         } else {
 
                             controller.selectJoystick(Integer.parseInt(parts[1]));
@@ -89,13 +145,15 @@ public class View {
 
                     case "start":
                         System.out
-                                .println("Started sending data\nType stop and press enter to stop and return to menu");
+                                .print("Started sending data\nPress Ctrl+b to stop and return to menu");
 
                         controller.sendData();
+
                         break;
                     case "server":
                         if (parts.length < 2) {
-                            System.out.println("Usage: server <port>");
+                            printWriter.println("Usage: server <port>");
+                            printWriter.flush();
                         } else {
 
                             controller.setupNetwork(true, "", Integer.parseInt(parts[1]));
@@ -105,7 +163,8 @@ public class View {
 
                     case "client":
                         if (parts.length < 3) {
-                            System.out.println("Usage: client <hostname> <port>");
+                            printWriter.println("Usage: client <hostname> <port>");
+                            printWriter.flush();
                         } else {
 
                             controller.setupNetwork(false, parts[1], Integer.parseInt(parts[2]));
@@ -115,33 +174,55 @@ public class View {
 
                     case "bind":
                         if (parts.length < 3) {
-                            System.out.println("Usage: bind <type> [ids]");
+                            printWriter.println("Usage: bind <type> [ids]");
+                            printWriter.flush();
                         } else {
 
                             switch (parts[1].toLowerCase()) {
                                 case "button":
                                     for (int i = 2; i < parts.length; i++) {
-                                        System.out.println(
-                                                "Binding button " + parts[i] + " type stop to continue to next button");
+                                        printWriter.print(
+                                                "Binding button " + parts[i] + " press Ctrl+b to continue to next button");
+                                        printWriter.flush();
                                         controller.bindButtons(Integer.parseInt(parts[i]));
-                                        Thread.sleep(500);
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e) {
+                                            System.err.println("Error occured, exiting");
+                                            System.exit(1);
+
+                                        }
                                     }
                                     break;
                                 case "axis":
                                     for (int i = 2; i < parts.length; i++) {
-                                        System.out.println(
-                                                "Binding axis " + parts[i] + " type stop to continue to next axis");
+                                        printWriter.print(
+                                                "Binding axis " + parts[i] + " press Ctrl+b to continue to next axis");
+                                        printWriter.flush();
                                         controller.bindAxis(Integer.parseInt(parts[i]));
-                                        Thread.sleep(500);
+
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e) {
+                                            System.err.println("Error occured, exiting");
+                                            System.exit(1);
+                                        }
 
                                     }
                                     break;
                                 case "pov":
                                     for (int i = 2; i < parts.length; i++) {
-                                        System.out.println(
-                                                "Binding pov " + parts[i] + " type stop to continue to next pov");
+                                        printWriter.print(
+                                                "Binding pov " + parts[i] + " press Ctrl+b to continue to next pov");
+                                        printWriter.flush();
                                         controller.bindPovs(Integer.parseInt(parts[i]));
-                                        Thread.sleep(500);
+
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e) {
+                                            System.err.println("Error occured, exiting");
+                                            System.exit(1);
+                                        }
 
                                     }
                                     break;
@@ -153,50 +234,54 @@ public class View {
                     case "exit":
                         return;
                     default:
-                        System.out.println("Unknown command. Type 'help' for options.");
+                        printWriter.println("Unknown command. Type 'help' for options.");
+                        printWriter.flush();
                         break;
                 }
             } catch (OperationFailedException e) {
-                System.out.println(e.getMessage());
+                printWriter.println(e.getMessage());
+                printWriter.flush();
             } catch (java.lang.NumberFormatException e) {
-                System.out.println("Incorrect format");
+                printWriter.println("Incorrect format");
+                printWriter.flush();
             }
         }
     }
 
     public void takeInput() {
-        String input = "";
-        try {
-            if (System.in.available() > 0) {
-                input = scanner.nextLine().trim();
-            }
 
-            if (input.equalsIgnoreCase("stop")) {
-                controller.stop();
-            }
-        } catch (IOException e) {
-            System.out.println(e);
-            System.exit(1);
+        try {
+            lineReader.readLine();
+        } catch (UserInterruptException e) {
+
         }
+
+    }
+
+    public boolean stop() {
+        return stop(null);
+    }
+
+    public boolean stop(Thread thread) {
+        controller.stop();
+        while (thread != null && thread.isAlive()) {
+            thread.interrupt();
+        }
+        return true;
     }
 
     private void printHelp() {
-        System.out.println("Available commands:");
-        System.out.println("  listjoy                       - Lists all available joysticks");
-        System.out.println("  setaxis <axis amount>         - Sets the number of axis");
-        System.out.println("  setbuttons <button amount>    - Sets the number of buttons");
-        System.out.println("  setpovs <pov amount>          - Sets the number of povs");
-        System.out.println("  selectjoy                     - Select a joystick to read from");
-        System.out.println("  start                         - starts sending");
-        System.out.println(
-                "  server <port>                 - sets this sender as a server with port and waits for client to connect");
-        System.out.println(
-                "  client <hostname> <port>      - sets this sender as a client and connects to hostname and port");
-        System.out.println("  bind <type> [ids]             - Binds the selected type to vjoy ids");
-        System.out.println("  exit                          - Exit the program");
-        System.out.println("  save                          - Saves the current bindings");
-        System.out.println("  load                          - Loads the bindings from Bindings.txt");
-        System.out.println(
-                "  stopconnection                - Stops the current network connection. The connection needs to be setup again");
+        printWriter.println("Available commands:");
+        printWriter.flush();
+        for (Command command : commands) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(command.getCommand());
+            builder.repeat(" ", 20 - command.getCommand().length());
+            builder.append("-");
+            builder.append(command.getHelpMessage());
+
+            printWriter.println(builder.toString());
+            printWriter.flush();
+        }
     }
 }
