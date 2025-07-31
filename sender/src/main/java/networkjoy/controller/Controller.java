@@ -76,6 +76,7 @@ public class Controller {
 
         } catch (IOException e) {
             view.stop(thread);
+            this.stopConnection();
             throw new OperationFailedException("Couldn't send data: " + e);
 
         } catch (NullPointerException e) {

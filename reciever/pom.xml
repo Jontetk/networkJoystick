@@ -18,6 +18,11 @@
         <artifactId>jna-platform</artifactId>
         <version>5.17.0</version>
     </dependency>
+        <dependency>
+			<groupId>org.jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>3.30.0</version>
+		</dependency>
 
     </dependencies>
 </project>

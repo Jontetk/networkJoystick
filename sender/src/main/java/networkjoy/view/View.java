@@ -2,25 +2,18 @@ package networkjoy.view;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
-import javax.swing.text.Keymap;
 
-import org.jline.keymap.BindingReader;
 import org.jline.keymap.KeyMap;
-import org.jline.reader.Binding;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
-import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.builtins.Completers.TreeCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -40,14 +33,14 @@ public class View {
 
         commands = new ArrayList<Command>(14);
         commands.add(new Command("listjoy", "Lists all available joysticks"));
-        commands.add(new Command("setaxis", "Sets the number of axis"));
-        commands.add(new Command("setbuttons", "Sets the number of buttons"));
-        commands.add(new Command("setpovs", "Sets the number of povs"));
+        commands.add(new Command("setaxis","<axis amount>", "Sets the number of axis"));
+        commands.add(new Command("setbuttons","<button amount>", "Sets the number of buttons"));
+        commands.add(new Command("setpovs","<pov amount>", "Sets the number of povs"));
         commands.add(new Command("selectjoy", "Select a joystick to read from"));
         commands.add(new Command("start", "Starts sending"));
-        commands.add(new Command("server", "Sets this sender as a server with port and waits for client to connect"));
-        commands.add(new Command("client", "Sets this sender as a client and connects to hostname and port"));
-        commands.add(new Command("bind", "Binds the selected type to vjoy ids",
+        commands.add(new Command("server","<port>", "Sets this sender as a server with port and waits for client to connect"));
+        commands.add(new Command("client","<hostname> <port>", "Sets this sender as a client and connects to hostname and port"));
+        commands.add(new Command("bind","<type> [ids]", "Binds the selected type to vjoy ids",
                 Arrays.asList(new Command("button", null), new Command("axis", null), new Command("pov", null))));
         commands.add(new Command("exit", "Exit the program"));
         commands.add(new Command("save", "Saves the current bindings"));
@@ -162,9 +155,9 @@ public class View {
                         break;
 
                     case "start":
-                        System.out
+                        printWriter
                                 .print("Started sending data\nPress Ctrl+b to stop and return to menu");
-
+                        printWriter.flush();
                         controller.sendData();
 
                         break;
@@ -270,7 +263,9 @@ public class View {
     public void takeInput() {
 
         try {
+            while(true) {
             lineReader.readLine();
+            }
         } catch (UserInterruptException e) {
 
         }
@@ -282,20 +277,42 @@ public class View {
     }
 
     public boolean stop(Thread thread) {
-        controller.stop();
         while (thread != null && thread.isAlive()) {
             thread.interrupt();
         }
+        controller.stop();
         return true;
     }
 
     private void printHelp() {
         printWriter.println("Available commands:");
         printWriter.flush();
+        int repeatTimes=1;
+        int commandLength;
+
+        for (Command command: commands) {
+                if (command.getCommandArg()!= null) {
+                commandLength = command.getCommand().length()+1+command.getCommandArg().length();
+            }
+            else{
+                commandLength = command.getCommand().length();
+            }
+            while(repeatTimes-commandLength<5) {
+                repeatTimes+=1;
+            }
+        }
         for (Command command : commands) {
             StringBuilder builder = new StringBuilder();
             builder.append(command.getCommand());
-            builder.repeat(" ", 20 - command.getCommand().length());
+            if (command.getCommandArg()!= null) {
+                builder.append(" ");
+                builder.append(command.getCommandArg());
+                commandLength = command.getCommand().length()+1+command.getCommandArg().length();
+            }
+            else{
+                commandLength = command.getCommand().length();
+            }
+            builder.repeat(" ",repeatTimes-commandLength);
             builder.append("-");
             builder.append(command.getHelpMessage());
 

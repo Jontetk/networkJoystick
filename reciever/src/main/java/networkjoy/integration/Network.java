@@ -33,7 +33,6 @@ public class Network {
 
     public RecievedJoyData recieveData() throws IOException {
         socketOutput.writeByte(239); // Write a specific byte to signify ready to recieve.
-        //int dataLength = socketInput.readInt();
         
         int buttonInputs = socketInput.readUnsignedByte();
         int axisInputs = socketInput.readUnsignedByte();

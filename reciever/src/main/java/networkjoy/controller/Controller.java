@@ -10,8 +10,9 @@ import networkjoy.util.RecievedJoyData;
 public class Controller {
     private Vjoy vjoy = null;
     private Network network;
-    private boolean running;
+    private volatile boolean running;
     private View view;
+    private Thread thread;
 
     public Controller() {
         this.running = false;
@@ -48,17 +49,21 @@ public class Controller {
         }
 
     }
-        public void stopConnection() {
+
+    public void stopConnection() {
         try {
             network.stopConnection();
         } catch (IOException e) {
-            throw new OperationFailedException("Couldn't stop connection: "+e);
+            throw new OperationFailedException("Couldn't stop connection: " + e);
         }
-        
+
     }
+
     public void stop() {
         running = false;
+        return;
     }
+
     public void recieveData() {
         if (vjoy == null) {
             throw new OperationFailedException("No Vjoy device selected please select a vjoy deveice");
@@ -66,10 +71,13 @@ public class Controller {
         if (network == null) {
             throw new OperationFailedException("No network setup, please set up as client or server");
         }
+        try {
         running = true;
+        thread = new Thread(()->{view.takeInput();});
+        thread.start();
         while (running) {
-            view.takeInput();
-            try {
+            
+           
                 RecievedJoyData recieved = network.recieveData();
 
                 for (byte i = 1; i <= recieved.getButtonDatas().length; i++) {
@@ -81,10 +89,14 @@ public class Controller {
                 for (byte i = 1; i <= recieved.getPovDatas().length; i++) {
                     vjoy.setPov(35999 / 8 * (recieved.getPovDatas()[i - 1] - 1), i, true);
                 }
-            } catch (IOException e) {
-                network = null;
+            }} catch (IOException e) {
+                view.stop(thread);
+                this.stopConnection();
                 throw new OperationFailedException("Couldn't recieve data: " + e);
             }
+        while (thread !=null &&thread.isAlive()) {
+            
         }
+        
     }
 }

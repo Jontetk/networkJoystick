@@ -40,7 +40,6 @@ public class Network {
         } // Block until reciever is ready
         bArrayOutputStream.reset();
         DataOutputStream output = new DataOutputStream(bArrayOutputStream);
-        output.writeBoolean(true);;
         output.writeByte(buttonDatas.length);
         output.writeByte(axisDatas.length);
         output.writeByte(povDatas.length);
