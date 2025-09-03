@@ -3,7 +3,7 @@ Quick solution to make it possible to send controller inputs over a network. Cre
 
 ## Requirements
 ### Reciever
-* Java 8, 32-bit, Teseted in windows xp with [java 8u152](https://archive.org/download/Java-Archive/Java%20SE%208%20%288u202%20and%20earlier%29/8u152/).
+* Java 8, 32-bit, Tested in windows xp with [java 8u152](https://archive.org/download/Java-Archive/Java%20SE%208%20%288u202%20and%20earlier%29/8u152/).
 * vJoy, Tested with [version 2.0.3](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.0.3%20210414/).
 * [vJoy interface dll](https://github.com/Jontetk/networkJoystick/blob/main/reciever/src/main/resources/vJoyInterface.dll) placed in a directory accessible to java, usually the same directory as the jar file is launched from. 
 
